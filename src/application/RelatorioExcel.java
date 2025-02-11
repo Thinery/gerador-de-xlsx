@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class RelatorioExcel {
+    private static final String DIRETORIO_PADRAO = "\\\\montagem\\Produção 2025\\Relatórios"; // Defina o diretório padrão
+    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(RelatorioExcel::criarInterface);
     }
@@ -16,9 +18,9 @@ public class RelatorioExcel {
     private static void criarInterface() {
         JFrame frame = new JFrame("Gerador de Planilha XLSX");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 300);
+        frame.setSize(400, 350);
         
-        JPanel panel = new JPanel(new GridLayout(7, 2));
+        JPanel panel = new JPanel(new GridLayout(8, 2));
         
         JLabel labelCabecalho = new JLabel("Cabeçalho:");
         String[] opcoesCabecalho = {"Avante", "Face e Fotos", "Face Produções"};
@@ -39,6 +41,9 @@ public class RelatorioExcel {
         JLabel labelCancelados = new JLabel("Números Cancelados:");
         JTextField campoCancelados = new JTextField();
         
+        JLabel labelTotalFotos = new JLabel("Total de Fotos:");
+        JTextField campoTotalFotos = new JTextField();
+        
         JButton botaoGerar = new JButton("Gerar Planilha");
         botaoGerar.addActionListener(e -> gerarArquivoXLSX(
                 campoCidade.getText(),
@@ -46,7 +51,8 @@ public class RelatorioExcel {
                 campoProducao.getText(),
                 (String) comboCabecalho.getSelectedItem(),
                 campoNumeracao.getText(),
-                campoCancelados.getText()
+                campoCancelados.getText(),
+                campoTotalFotos.getText()
         ));
         
         panel.add(labelCabecalho); panel.add(comboCabecalho);
@@ -55,13 +61,14 @@ public class RelatorioExcel {
         panel.add(labelProducao); panel.add(campoProducao);
         panel.add(labelNumeracao); panel.add(campoNumeracao);
         panel.add(labelCancelados); panel.add(campoCancelados);
+        panel.add(labelTotalFotos); panel.add(campoTotalFotos);
         panel.add(new JLabel()); panel.add(botaoGerar);
         
         frame.add(panel);
         frame.setVisible(true);
     }
 
-    private static void gerarArquivoXLSX(String cidade, String contrato, String producao, String cabecalho, String numeracao, String cancelados) {
+    private static void gerarArquivoXLSX(String cidade, String contrato, String producao, String cabecalho, String numeracao, String cancelados, String totalFotos) {
         String caminhoModelo = switch (cabecalho) {
             case "Avante" -> "models\\modeloavante.xlsx";
             case "Face e Fotos" -> "models\\modelofacefotos.xlsx";
@@ -74,6 +81,17 @@ public class RelatorioExcel {
             return;
         }
         
+        JFileChooser fileChooser = new JFileChooser(DIRETORIO_PADRAO);
+        fileChooser.setDialogTitle("Salvar Arquivo");
+        fileChooser.setSelectedFile(new File("PlanilhaGerada.xlsx"));
+        
+        int userSelection = fileChooser.showSaveDialog(null);
+        if (userSelection != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        
+        File arquivoSaida = fileChooser.getSelectedFile();
+        
         try (FileInputStream fis = new FileInputStream(caminhoModelo);
              Workbook workbook = new XSSFWorkbook(fis)) {
             Sheet sheet = workbook.getSheetAt(0);
@@ -82,6 +100,7 @@ public class RelatorioExcel {
             sheet.getRow(1).getCell(0).setCellValue("CONTRATO: " + contrato);
             sheet.getRow(2).getCell(0).setCellValue("PRODUÇÃO: " + producao);
             sheet.getRow(0).getCell(7).setCellValue("SEQUÊNCIA: " + numeracao);
+            sheet.getRow(1).getCell(7).setCellValue("TOTAL FOTOS: " + totalFotos);
             
             Set<Integer> numerosCancelados = new HashSet<>();
             for (String num : cancelados.split(",")) {
@@ -98,7 +117,7 @@ public class RelatorioExcel {
             int linha = 3;
             int coluna = 0;
             for (int i = inicio; i <= fim; i++) {
-                if (linha > 27) { // Quando chega na linha 28, pula para a coluna seguinte e reinicia a linha
+                if (linha > 27) {
                     linha = 3;
                     coluna++;
                 }
@@ -116,11 +135,11 @@ public class RelatorioExcel {
                 linha++;
             }
             
-            try (FileOutputStream fileOut = new FileOutputStream("PlanilhaGerada.xlsx")) {
+            try (FileOutputStream fileOut = new FileOutputStream(arquivoSaida)) {
                 workbook.write(fileOut);
             }
             
-            JOptionPane.showMessageDialog(null, "Arquivo gerado com sucesso!");
+            JOptionPane.showMessageDialog(null, "Arquivo salvo em: " + arquivoSaida.getAbsolutePath());
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Erro ao gerar arquivo: " + e.getMessage());
         }
