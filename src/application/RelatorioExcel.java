@@ -78,10 +78,10 @@ public class RelatorioExcel {
              Workbook workbook = new XSSFWorkbook(fis)) {
             Sheet sheet = workbook.getSheetAt(0);
             
-            sheet.getRow(0).getCell(0).setCellValue("CIDADE: "+cidade);
-            sheet.getRow(1).getCell(0).setCellValue("CONTRATO: "+contrato);
-            sheet.getRow(2).getCell(0).setCellValue("PRODUÇÃO: "+producao);
-            sheet.getRow(0).getCell(7).setCellValue("SEQUÊNCIA: "+numeracao);
+            sheet.getRow(0).getCell(0).setCellValue("CIDADE: " + cidade);
+            sheet.getRow(1).getCell(0).setCellValue("CONTRATO: " + contrato);
+            sheet.getRow(2).getCell(0).setCellValue("PRODUÇÃO: " + producao);
+            sheet.getRow(0).getCell(7).setCellValue("SEQUÊNCIA: " + numeracao);
             
             Set<Integer> numerosCancelados = new HashSet<>();
             for (String num : cancelados.split(",")) {
@@ -96,11 +96,16 @@ public class RelatorioExcel {
             int fim = Integer.parseInt(partes[1].trim());
             
             int linha = 3;
+            int coluna = 0;
             for (int i = inicio; i <= fim; i++) {
+                if (linha > 27) { // Quando chega na linha 28, pula para a coluna seguinte e reinicia a linha
+                    linha = 3;
+                    coluna++;
+                }
                 Row row = sheet.getRow(linha);
                 if (row == null) row = sheet.createRow(linha);
-                Cell cell = row.getCell(0);
-                if (cell == null) cell = row.createCell(0);
+                Cell cell = row.getCell(coluna);
+                if (cell == null) cell = row.createCell(coluna);
                 cell.setCellValue(i);
                 if (numerosCancelados.contains(i)) {
                     CellStyle estilo = workbook.createCellStyle();
