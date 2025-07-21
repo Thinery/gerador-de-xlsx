@@ -9,21 +9,24 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class RelatorioExcel {
-    private static final String DIRETORIO_PADRAO = "\\\\montagem\\Produção 2025\\Relatórios"; // Defina o diretório padrão
+    private static final String DIRETORIO_PADRAO = ".."; // Defina o diretório padrão
+    private static final String DIRETORIO_AVANTE = "..\\Avante\\Relatórios de Fechamento";
+    private static final String DIRETORIO_FACEPRODUCOES = "..\\Face Produções\\Relatórios de Fechamento";
+    private static final String DIRETORIO_AFACEFOTOS = "..\\Face Fotos\\Relatórios de Fechamento";
     
     public static void main(String[] args) {
         SwingUtilities.invokeLater(RelatorioExcel::criarInterface);
     }
 
     private static void criarInterface() {
-        JFrame frame = new JFrame("Gerador de Planilha XLSX");
+        JFrame frame = new JFrame("Gerador de Planilha made by ThiagoNery");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 350);
         
         JPanel panel = new JPanel(new GridLayout(8, 2));
         
         JLabel labelCabecalho = new JLabel("Cabeçalho:");
-        String[] opcoesCabecalho = {"Avante", "Face e Fotos", "Face Produções"};
+        String[] opcoesCabecalho = {"Avante", "A Face e Fotos", "Face Produções"};
         JComboBox<String> comboCabecalho = new JComboBox<>(opcoesCabecalho);
         
         JLabel labelCidade = new JLabel("Cidade:");
@@ -71,7 +74,7 @@ public class RelatorioExcel {
     private static void gerarArquivoXLSX(String cidade, String contrato, String producao, String cabecalho, String numeracao, String cancelados, String totalFotos) {
         String caminhoModelo = switch (cabecalho) {
             case "Avante" -> "models\\modeloavante.xlsx";
-            case "Face e Fotos" -> "models\\modelofacefotos.xlsx";
+            case "A Face e Fotos" -> "models\\modelofacefotos.xlsx";
             case "Face Produções" -> "models\\modelofaceproducoes.xlsx";
             default -> null;
         };
