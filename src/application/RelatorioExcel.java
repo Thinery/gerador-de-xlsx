@@ -104,11 +104,17 @@ public class RelatorioExcel {
             String[] partes = numeracao.split("-");
             String inicio = partes[0].trim();
             String fim = partes[1].trim();
-            nomeArquivo = String.format("%s - %s - (%s - %s).xlsx", cidade.trim(), producao.trim(), inicio, fim);
+
+            // Pega apenas a parte da cidade antes do "-"
+            String cidadeFormatada = cidade.contains("-") ? cidade.split("-")[0].trim() : cidade.trim();
+
+            nomeArquivo = String.format("%s - %s - (%s - %s).xlsx", cidadeFormatada, producao.trim(), inicio, fim);
+            nomeArquivo = nomeArquivo.toUpperCase();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Numeração inválida. Use o formato: 0001-0050");
             return;
         }
+
 
         // Abre o JFileChooser já com o nome de arquivo sugerido
         JFileChooser fileChooser = new JFileChooser(pastaDestino);
@@ -143,8 +149,20 @@ public class RelatorioExcel {
             }
            
             String[] partes = numeracao.split("-");
-            int inicio = Integer.parseInt(partes[0].trim());
-            int fim = Integer.parseInt(partes[1].trim());
+            int inicio, fim;
+            try {
+                inicio = Integer.parseInt(partes[0].trim());
+                fim = Integer.parseInt(partes[1].trim());
+               
+                if (inicio > fim) {
+                    JOptionPane.showMessageDialog(null, "A numeração inicial-final está incorreta!");
+                    return;
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Numeração inválida. Use o formato: 0001-0050");
+                return;
+            }
+
            
             int linha = 3;
             int coluna = 0;
@@ -169,6 +187,15 @@ public class RelatorioExcel {
            
             try (FileOutputStream fileOut = new FileOutputStream(arquivoSaida)) {
                 workbook.write(fileOut);
+            }
+           
+         // Tenta abrir o arquivo automaticamente
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(arquivoSaida);
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(null, "Erro ao tentar abrir o arquivo: " + ex.getMessage());
+                }
             }
            
             JOptionPane.showMessageDialog(null, "Arquivo salvo em: " + arquivoSaida.getAbsolutePath());
